@@ -3,203 +3,209 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CORE | MISSION CONTROL</title>
-    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&display=swap" rel="stylesheet">
+    <title>CORE | Future Systems</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
     
     <style>
-        /* --- CORE VISUALS --- */
-        body { margin: 0; overflow: hidden; background-color: #050505; font-family: 'Fira Code', monospace; color: #00ff41; }
+        /* --- MODERN GLASS THEME --- */
+        :root {
+            --glass: rgba(255, 255, 255, 0.05);
+            --border: rgba(255, 255, 255, 0.1);
+            --accent: #00d4ff; /* Cyan Blue */
+            --bg-gradient: radial-gradient(circle at 10% 20%, rgb(15, 23, 42) 0%, rgb(0, 0, 0) 90%);
+        }
+
+        body {
+            margin: 0; font-family: 'Inter', sans-serif;
+            background: var(--bg-gradient); color: white;
+            overflow-x: hidden;
+        }
+
+        /* --- NAVIGATION BAR --- */
+        nav {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 20px 50px;
+            backdrop-filter: blur(10px); background: rgba(0,0,0,0.3);
+            position: fixed; width: 100%; top: 0; z-index: 100; box-sizing: border-box;
+        }
+        .logo { font-weight: 800; font-size: 24px; letter-spacing: -1px; }
+        .logo span { color: var(--accent); }
+        .nav-btn {
+            padding: 10px 25px; border-radius: 50px; border: 1px solid var(--border);
+            background: var(--glass); color: white; cursor: pointer; transition: 0.3s;
+            font-weight: 600; font-size: 14px;
+        }
+        .nav-btn:hover { background: var(--accent); border-color: var(--accent); color: black; }
+
+        /* --- HERO SECTION (Landing Page) --- */
+        .hero {
+            height: 100vh; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; text-align: center;
+            padding: 0 20px;
+        }
+        h1 { font-size: 60px; font-weight: 800; margin-bottom: 20px; line-height: 1.1; }
+        h1 span { -webkit-text-stroke: 1px white; color: transparent; } /* Outline text effect */
+        .subtitle { font-size: 18px; color: #aaa; max-width: 600px; line-height: 1.6; margin-bottom: 40px; }
         
-        #ui-layer {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            z-index: 10; pointer-events: none;
+        /* --- PROJECT GRID (The New Dashboard) --- */
+        .grid-container {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px; padding: 100px 50px; max-width: 1200px; margin: 0 auto;
         }
-
-        /* BOX STYLES */
-        .terminal-box {
-            background-color: rgba(12, 12, 14, 0.95);
-            border: 1px solid #333; border-top: 4px solid #00ff41;
-            padding: 40px; width: 85%; max-width: 550px;
-            box-shadow: 0 0 60px rgba(0, 255, 65, 0.15);
-            pointer-events: auto; position: relative; text-align: left;
-        }
-
-        h1 { margin: 0 0 10px 0; font-size: 28px; color: #fff; text-shadow: 0 0 10px rgba(255, 255, 255, 0.3); }
-        .subtitle { font-size: 12px; color: #666; margin-bottom: 25px; text-transform: uppercase; letter-spacing: 2px;}
         
-        /* PROJECT LIST ITEMS */
-        .project-item {
-            padding: 10px; border: 1px solid #333; margin-bottom: 10px;
-            cursor: pointer; transition: 0.2s; background: rgba(0, 255, 65, 0.05);
+        .card {
+            background: var(--glass); border: 1px solid var(--border);
+            border-radius: 20px; padding: 30px; transition: 0.3s;
+            position: relative; overflow: hidden;
         }
-        .project-item:hover { background: #00ff41; color: #000; box-shadow: 0 0 15px #00ff41; }
-        .project-item::before { content: "[ ACCESS ] "; font-weight: bold; }
+        .card:hover { transform: translateY(-10px); border-color: var(--accent); box-shadow: 0 10px 40px rgba(0, 212, 255, 0.2); }
+        
+        .card h3 { margin-top: 0; font-size: 22px; }
+        .card p { color: #aaa; font-size: 14px; line-height: 1.5; }
+        .badge {
+            display: inline-block; padding: 5px 12px; border-radius: 20px;
+            font-size: 10px; font-weight: bold; margin-bottom: 15px;
+            background: rgba(0, 212, 255, 0.1); color: var(--accent);
+        }
 
-        /* MODAL POPUP (The Blueprints) */
-        #modal-overlay {
+        /* --- AUTH MODAL (Popup) --- */
+        #auth-modal {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8); z-index: 20; display: flex;
-            align-items: center; justify-content: center; backdrop-filter: blur(5px);
+            background: rgba(0,0,0,0.8); backdrop-filter: blur(10px);
+            display: flex; justify-content: center; align-items: center; z-index: 200;
         }
-        .modal-content {
-            background: #0d1117; border: 2px solid #00ff41; padding: 30px; width: 90%; max-width: 500px;
-            box-shadow: 0 0 50px rgba(0, 255, 65, 0.2); position: relative;
+        .modal-box {
+            background: #111; border: 1px solid #333; padding: 40px; border-radius: 20px;
+            width: 90%; max-width: 400px; text-align: center;
         }
-        .close-btn {
-            position: absolute; top: 10px; right: 15px; cursor: pointer; color: #ff3333; font-weight: bold; font-size: 20px;
+        input {
+            width: 100%; padding: 15px; margin-bottom: 15px; border-radius: 10px;
+            background: #222; border: 1px solid #333; color: white; box-sizing: border-box;
         }
-
-        /* INPUTS & UTILS */
-        input { width: 100%; padding: 12px; margin-bottom: 15px; background: rgba(0,0,0,0.5); border: 1px solid #333; color: #00ff41; outline: none; }
-        .btn { width: 100%; padding: 15px; background: #00ff41; color: #000; border: none; font-weight: bold; cursor: pointer; }
         .hidden { display: none !important; }
-        canvas { display: block; position: fixed; top: 0; left: 0; z-index: 1; }
+
+        /* Background Animation */
+        canvas { position: fixed; top: 0; left: 0; z-index: -1; }
     </style>
 </head>
 <body>
 
     <canvas id="bg-canvas"></canvas>
 
-    <div id="modal-overlay" class="hidden">
-        <div class="modal-content">
-            <span class="close-btn" onclick="closeModal()">[X] CLOSE</span>
-            <h2 id="modal-title" style="margin-top: 0; border-bottom: 1px solid #333; padding-bottom: 10px;">PROJECT NAME</h2>
-            <p id="modal-desc" style="color: #ccc; line-height: 1.6;">Project details go here...</p>
-            <div style="margin-top: 20px; padding: 10px; background: rgba(255,255,255,0.05);">
-                <span style="font-size: 10px; color: #888;">STATUS:</span> <span id="modal-status" style="color: #00ff41;">ACTIVE</span>
-            </div>
+    <nav>
+        <div class="logo">CORE <span>SYSTEMS</span></div>
+        <div style="display: flex; gap: 15px;">
+            <button class="nav-btn" onclick="scrollToProjects()">PROJECTS</button>
+            <button class="nav-btn" id="login-btn" onclick="toggleAuth()">MEMBER LOGIN</button>
         </div>
+    </nav>
+
+    <div class="hero">
+        <h1>VERIFY IN BITS.<br><span>BUILD IN ATOMS.</span></h1>
+        <p class="subtitle">
+            The world's first Sim-to-Real robotics foundry. 
+            We simulate flight dynamics, swarm logic, and IoT protocols before manufacturing a single part.
+        </p>
+        <button class="nav-btn" style="background: var(--accent); color: black; padding: 15px 40px; font-size: 16px;" onclick="scrollToProjects()">
+            EXPLORE INNOVATIONS
+        </button>
     </div>
 
-    <div id="ui-layer">
+    <div class="grid-container" id="projects">
         
-        <div id="login-panel" class="terminal-box">
-            <h1>IDENTITY VERIFICATION</h1>
-            <div class="subtitle">ENTER CREDENTIALS TO ACCESS C.O.R.E.</div>
-            <input type="email" id="login-email" placeholder="AGENT EMAIL">
-            <input type="password" id="login-pass" placeholder="SECURITY KEY">
-            <button class="btn" onclick="handleLogin()">AUTHENTICATE</button>
-            <p style="font-size: 11px; text-align: center; margin-top: 15px; cursor: pointer; text-decoration: underline;" onclick="toggleForm('register')">>> REGISTER NEW AGENT</p>
+        <div class="card">
+            <span class="badge">SWARM ROBOTICS</span>
+            <h3>Project HiveClean</h3>
+            <p>Autonomous hexagonal robots designed for industrial floor cleaning. Features swarm intelligence for coordinated pathfinding.</p>
+            <button class="nav-btn" style="margin-top: 20px; width: 100%; font-size: 12px;">VIEW BLUEPRINTS</button>
         </div>
 
-        <div id="register-panel" class="terminal-box hidden">
-            <h1>NEW AGENT PROFILE</h1>
-            <input type="email" id="reg-email" placeholder="SET EMAIL">
-            <input type="password" id="reg-pass" placeholder="SET PASSWORD">
-            <button class="btn" onclick="handleRegister()">SUBMIT REQUEST</button>
-            <p style="font-size: 11px; text-align: center; margin-top: 15px; cursor: pointer; text-decoration: underline;" onclick="toggleForm('login')">>> BACK TO LOGIN</p>
+        <div class="card">
+            <span class="badge">SIMULATION</span>
+            <h3>PilotPrep Sim</h3>
+            <p>Browser-based flight training engine. Simulates realistic aerodynamics and cockpit controls for student pilots.</p>
+            <button class="nav-btn" style="margin-top: 20px; width: 100%; font-size: 12px;">LAUNCH SIM</button>
         </div>
 
-        <div id="dashboard-panel" class="terminal-box hidden">
-            <div style="border-bottom: 1px solid #333; margin-bottom: 20px; padding-bottom: 10px; display: flex; justify-content: space-between;">
-                <span style="font-size: 10px;">ID: <span id="user-display" style="color:#fff;">UNKNOWN</span></span>
-                <span style="font-size: 10px; color: #00ff41;">SECURE CONNECTION</span>
-            </div>
+        <div class="card">
+            <span class="badge">IOT SAFETY</span>
+            <h3>SafeSite Integrated</h3>
+            <p>Smart construction helmet ecosystem. Uses ESP32 and MQTT to track worker biometrics and hazardous zones in real-time.</p>
+            <button class="nav-btn" style="margin-top: 20px; width: 100%; font-size: 12px;">READ SPECS</button>
+        </div>
+
+    </div>
+
+    <div id="auth-modal" class="hidden">
+        <div class="modal-box">
+            <h2 style="margin-top: 0;">MEMBER ACCESS</h2>
+            <p style="color: #666; font-size: 13px; margin-bottom: 20px;">Secure Gateway for Core Engineers</p>
             
-            <h1>MISSION CONTROL</h1>
-            <p style="font-size: 12px; color: #666;">SELECT A MODULE TO VIEW BLUEPRINTS:</p>
+            <input type="email" id="email" placeholder="name@core.net">
+            <input type="password" id="password" placeholder="••••••••">
             
-            <div class="project-item" onclick="openProject('hive')">
-                HIVE_CLEAN_BOT (Swarm Robotics)
-            </div>
-            <div class="project-item" onclick="openProject('flight')">
-                PILOT_PREP_SIM (Flight Dynamics)
-            </div>
-            <div class="project-item" onclick="openProject('iot')">
-                SAFE_SITE_IOT (Safety Systems)
-            </div>
-
-            <button class="btn" style="background: transparent; border: 1px solid #ff3333; color: #ff3333; margin-top: 20px;" onclick="logout()">TERMINATE SESSION</button>
+            <button class="nav-btn" style="width: 100%; background: var(--accent); color: black;" onclick="handleLogin()">ENTER DASHBOARD</button>
+            <p style="font-size: 12px; margin-top: 15px; cursor: pointer; color: #666;" onclick="toggleAuth()">Cancel</p>
         </div>
-
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-        // ============================================
-        // PASTE YOUR FIREBASE KEYS HERE (AGAIN)
-        // ============================================
+        // --- PASTE FIREBASE KEYS HERE ---
         const firebaseConfig = {
-            apiKey: "AIzaSyCix4eALWZyYsQU7lPuZMSRfnBNDW4AKK0",
+             apiKey: "AIzaSyCix4eALWZyYsQU7lPuZMSRfnBNDW4AKK0",
   authDomain: "core-system-d53c1.firebaseapp.com",
   projectId: "core-system-d53c1",
   storageBucket: "core-system-d53c1.firebasestorage.app",
   messagingSenderId: "854751335854",
   appId: "1:854751335854:web:791657757cfa112c1ae43f"
         };
-        // ============================================
-
+        
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
 
-        // --- AUTH LOGIC ---
+        // --- INTERACTION ---
+        window.scrollToProjects = () => document.getElementById('projects').scrollIntoView({behavior: 'smooth'});
+        window.toggleAuth = () => document.getElementById('auth-modal').classList.toggle('hidden');
+
         window.handleLogin = async () => {
-            try { await signInWithEmailAndPassword(auth, document.getElementById('login-email').value, document.getElementById('login-pass').value); }
-            catch (e) { alert("ERROR: " + e.message); }
-        }
-        window.handleRegister = async () => {
-            try { await createUserWithEmailAndPassword(auth, document.getElementById('reg-email').value, document.getElementById('reg-pass').value); }
-            catch (e) { alert("ERROR: " + e.message); }
-        }
-        window.logout = () => signOut(auth);
-        
-        window.toggleForm = (t) => {
-            ['login','register','dashboard'].forEach(p => document.getElementById(p+'-panel').classList.add('hidden'));
-            document.getElementById(t+'-panel').classList.remove('hidden');
+            const e = document.getElementById('email').value;
+            const p = document.getElementById('password').value;
+            try {
+                await signInWithEmailAndPassword(auth, e, p);
+                alert("WELCOME BACK, COMMANDER.");
+                window.toggleAuth();
+                document.getElementById('login-btn').innerText = "LOGGED IN";
+            } catch(err) { alert("Access Denied: " + err.message); }
         }
 
-        onAuthStateChanged(auth, (user) => {
-            if(user) {
-                toggleForm('dashboard');
-                document.getElementById('user-display').innerText = user.email.toUpperCase();
-            } else {
-                toggleForm('login');
-            }
-        });
-
-        // --- PROJECT POPUP DATA ---
-        const projects = {
-            hive: {
-                title: "PROJECT: HIVE_CLEAN",
-                desc: "Autonomous Hexagonal Cleaning Robots designed for industrial swarm operations. \n\nTECH STACK:\n> Blender 3D Modeling (Chassis)\n> ESP32 Microcontrollers\n> Swarm Algorithm (C++)",
-                status: "MODELING PHASE"
-            },
-            flight: {
-                title: "PROJECT: PILOT_PREP",
-                desc: "Browser-based flight simulator for pilot exam training. Includes realistic physics engine and instrument panel.\n\nTECH STACK:\n> Three.js / WebGL\n> Flight Dynamics Physics Engine",
-                status: "LIVE ALPHA"
-            },
-            iot: {
-                title: "PROJECT: SAFE_SITE",
-                desc: "IoT-enabled construction helmet with biometric monitoring and hazard detection sensors.\n\nTECH STACK:\n> MQTT Protocol\n> Embedded C Sensors",
-                status: "CONCEPT"
-            }
-        };
-
-        window.openProject = (id) => {
-            const p = projects[id];
-            document.getElementById('modal-title').innerText = p.title;
-            document.getElementById('modal-desc').innerText = p.desc;
-            document.getElementById('modal-status').innerText = p.status;
-            document.getElementById('modal-overlay').classList.remove('hidden');
-        }
-        window.closeModal = () => document.getElementById('modal-overlay').classList.add('hidden');
-
-        // --- 3D BACKGROUND ---
+        // --- 3D PARTICLES BACKGROUND ---
         const scene = new THREE.Scene();
-        const cam = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
-        const ren = new THREE.WebGLRenderer({canvas: document.getElementById('bg-canvas'), alpha:true});
-        ren.setSize(window.innerWidth, window.innerHeight);
-        const geo = new THREE.IcosahedronGeometry(10,1);
-        const mat = new THREE.LineBasicMaterial({color:0x00ff41, transparent:true, opacity:0.15});
-        const mesh = new THREE.LineSegments(new THREE.WireframeGeometry(geo), mat);
-        scene.add(mesh);
-        cam.position.z = 30;
-        function animate(){ requestAnimationFrame(animate); mesh.rotation.y+=0.002; ren.render(scene, cam); }
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({canvas: document.getElementById('bg-canvas'), alpha: true});
+        renderer.setSize(window.innerWidth, window.innerHeight);
+
+        // Create Starfield
+        const geometry = new THREE.BufferGeometry();
+        const count = 1000;
+        const posArray = new Float32Array(count * 3);
+        for(let i=0; i<count*3; i++) posArray[i] = (Math.random()-0.5) * 50;
+        geometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+        const material = new THREE.PointsMaterial({size: 0.05, color: 0x00d4ff});
+        const stars = new THREE.Points(geometry, material);
+        scene.add(stars);
+
+        camera.position.z = 10;
+        
+        function animate() {
+            requestAnimationFrame(animate);
+            stars.rotation.y += 0.001; 
+            stars.rotation.x += 0.0005;
+            renderer.render(scene, camera);
+        }
         animate();
     </script>
 </body>
