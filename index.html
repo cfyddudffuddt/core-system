@@ -208,5 +208,121 @@
         }
         animate();
     </script>
+<style>
+    /* Floating Button */
+    .ai-bubble {
+        position: fixed; bottom: 30px; right: 30px;
+        width: 60px; height: 60px; border-radius: 50%;
+        background: var(--accent); color: black;
+        display: flex; justify-content: center; align-items: center;
+        font-size: 30px; cursor: pointer; box-shadow: 0 0 20px rgba(0, 212, 255, 0.4);
+        transition: 0.3s; z-index: 1000;
+    }
+    .ai-bubble:hover { transform: scale(1.1); }
+
+    /* The Chat Window (Hidden by default) */
+    .ai-window {
+        position: fixed; bottom: 100px; right: 30px;
+        width: 300px; padding: 20px; border-radius: 20px;
+        background: rgba(10, 10, 10, 0.9); border: 1px solid var(--border);
+        backdrop-filter: blur(15px); z-index: 999;
+        display: none; /* Hidden initially */
+    }
+    .ai-window.active { display: block; animation: popUp 0.3s ease; }
+    
+    @keyframes popUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* Mic Animation */
+    .listening { animation: pulse 1s infinite; background: #ff4444 !important; color: white; }
+    @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255, 68, 68, 0.7); } 70% { box-shadow: 0 0 0 15px rgba(255, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 68, 68, 0); } }
+</style>
+
+<div class="ai-bubble" onclick="toggleAI()">🤖</div>
+
+<div class="ai-window" id="ai-panel">
+    <h3 style="margin: 0; color: var(--accent);">CORE ASSISTANT</h3>
+    <p style="font-size: 12px; color: #888;">Voice Protocol Active</p>
+    <div id="ai-text" style="margin: 15px 0; color: white; font-size: 14px; min-height: 40px;">
+        "Hello Commander. Click the Mic to speak."
+    </div>
+    <button class="nav-btn" id="mic-btn" style="width: 100%;" onclick="startListening()">🎤 TAP TO SPEAK</button>
+</div>
+
+<script type="module">
+    import { GoogleGenerativeAI } from "https://esm.run/@google/generative-ai";
+
+    // REPLACE 'AIzaSy...' WITH YOUR REAL KEY INSIDE THE QUOTES
+let apiKey = "AIzaSyChrlVXKJBjMhmYIfO7qn6PklWJLnL_OU4";
+
+    window.toggleAI = () => {
+        document.getElementById('ai-panel').classList.toggle('active');
+    }
+
+    window.startListening = async () => {
+        // 1. Get Key if missing
+        if (!apiKey) {
+            apiKey = prompt("Please enter your Gemini API Key:");
+            if (apiKey) localStorage.setItem("gemini_key", apiKey);
+            else return;
+        }
+
+        const btn = document.getElementById('mic-btn');
+        const display = document.getElementById('ai-text');
+        
+        // 2. Start Voice Rec
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognition) { alert("Voice not supported in this browser."); return; }
+        
+        const recognition = new SpeechRecognition();
+        recognition.lang = 'en-US';
+        
+        btn.classList.add('listening');
+        btn.innerText = "LISTENING...";
+        display.innerText = "Listening...";
+        recognition.start();
+
+        recognition.onresult = async (event) => {
+            btn.classList.remove('listening');
+            btn.innerText = "🎤 TAP TO SPEAK";
+            
+            const userQuery = event.results[0][0].transcript;
+            display.innerText = `You: "${userQuery}"...`;
+
+            // 3. Send to Gemini
+            try {
+                const genAI = new GoogleGenerativeAI(apiKey);
+                const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash"});
+                
+                const prompt = `You are the AI for CORE (Robotics Company). 
+                Keep answers short (under 20 words). 
+                User asked: ${userQuery}`;
+
+                const result = await model.generateContent(prompt);
+                const response = result.response.text();
+                
+                display.innerText = response;
+                
+                // 4. Speak Answer
+               const speech = new SpeechSynthesisUtterance(response);
+
+// Get all available voices
+const voices = window.speechSynthesis.getVoices();
+
+// Try to find a "Google US English" or "Microsoft Zira" voice (usually clearer)
+// You can change 'Google' to other names to find different voices
+speech.voice = voices.find(voice => voice.name.includes("Google")) || voices[0];
+
+// Make it speak slightly faster and lower pitch (More Robotic)
+speech.rate = 1.1; 
+speech.pitch = 0.9;
+
+window.speechSynthesis.speak(speech);
+            } catch (error) {
+                display.innerText = "Error: Invalid Key or Network.";
+                localStorage.removeItem("gemini_key");
+            }
+        };
+    }
+</script>
 </body>
 </html>
