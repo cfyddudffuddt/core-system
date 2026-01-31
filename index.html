@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CORE | SECURE ACCESS</title>
+    <title>CORE | MISSION CONTROL</title>
     <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&display=swap" rel="stylesheet">
     
     <style>
-        /* --- CORE VISUAL DESIGN --- */
+        /* --- CORE VISUALS --- */
         body { margin: 0; overflow: hidden; background-color: #050505; font-family: 'Fira Code', monospace; color: #00ff41; }
         
         #ui-layer {
@@ -16,51 +16,43 @@
             z-index: 10; pointer-events: none;
         }
 
-        /* The Main Interface Box */
+        /* BOX STYLES */
         .terminal-box {
             background-color: rgba(12, 12, 14, 0.95);
             border: 1px solid #333; border-top: 4px solid #00ff41;
-            padding: 40px; width: 85%; max-width: 500px;
+            padding: 40px; width: 85%; max-width: 550px;
             box-shadow: 0 0 60px rgba(0, 255, 65, 0.15);
             pointer-events: auto; position: relative; text-align: left;
-            transition: all 0.5s ease;
         }
 
-        /* Typography */
         h1 { margin: 0 0 10px 0; font-size: 28px; color: #fff; text-shadow: 0 0 10px rgba(255, 255, 255, 0.3); }
         .subtitle { font-size: 12px; color: #666; margin-bottom: 25px; text-transform: uppercase; letter-spacing: 2px;}
-        p { margin: 10px 0; font-size: 14px; line-height: 1.4; }
         
-        /* Inputs & Buttons */
-        .input-group { margin-bottom: 15px; }
-        label { display: block; font-size: 11px; color: #888; margin-bottom: 5px; }
-        input {
-            width: 100%; padding: 12px;
-            background: rgba(0, 0, 0, 0.5); border: 1px solid #333;
-            color: #00ff41; font-family: 'Fira Code', monospace; box-sizing: border-box; outline: none;
+        /* PROJECT LIST ITEMS */
+        .project-item {
+            padding: 10px; border: 1px solid #333; margin-bottom: 10px;
+            cursor: pointer; transition: 0.2s; background: rgba(0, 255, 65, 0.05);
         }
-        input:focus { border-color: #00ff41; box-shadow: 0 0 15px rgba(0, 255, 65, 0.1); }
+        .project-item:hover { background: #00ff41; color: #000; box-shadow: 0 0 15px #00ff41; }
+        .project-item::before { content: "[ ACCESS ] "; font-weight: bold; }
 
-        .btn {
-            width: 100%; padding: 15px; margin-top: 20px;
-            background: #00ff41; color: #050505; border: none;
-            font-weight: bold; cursor: pointer; text-transform: uppercase;
-            font-family: 'Fira Code', monospace; letter-spacing: 1px;
+        /* MODAL POPUP (The Blueprints) */
+        #modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); z-index: 20; display: flex;
+            align-items: center; justify-content: center; backdrop-filter: blur(5px);
         }
-        .btn:hover { background: #fff; box-shadow: 0 0 25px #00ff41; }
-        
-        .toggle-link {
-            display: block; text-align: center; margin-top: 15px;
-            font-size: 11px; color: #666; text-decoration: underline; cursor: pointer; pointer-events: auto;
+        .modal-content {
+            background: #0d1117; border: 2px solid #00ff41; padding: 30px; width: 90%; max-width: 500px;
+            box-shadow: 0 0 50px rgba(0, 255, 65, 0.2); position: relative;
         }
-        .toggle-link:hover { color: #fff; }
+        .close-btn {
+            position: absolute; top: 10px; right: 15px; cursor: pointer; color: #ff3333; font-weight: bold; font-size: 20px;
+        }
 
-        /* Status Indicators */
-        .status-bar { display: flex; justify-content: space-between; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 10px; }
-        .blink { animation: blinker 2s linear infinite; }
-        @keyframes blinker { 50% { opacity: 0; } }
-
-        /* Utility */
+        /* INPUTS & UTILS */
+        input { width: 100%; padding: 12px; margin-bottom: 15px; background: rgba(0,0,0,0.5); border: 1px solid #333; color: #00ff41; outline: none; }
+        .btn { width: 100%; padding: 15px; background: #00ff41; color: #000; border: none; font-weight: bold; cursor: pointer; }
         .hidden { display: none !important; }
         canvas { display: block; position: fixed; top: 0; left: 0; z-index: 1; }
     </style>
@@ -69,80 +61,68 @@
 
     <canvas id="bg-canvas"></canvas>
 
+    <div id="modal-overlay" class="hidden">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal()">[X] CLOSE</span>
+            <h2 id="modal-title" style="margin-top: 0; border-bottom: 1px solid #333; padding-bottom: 10px;">PROJECT NAME</h2>
+            <p id="modal-desc" style="color: #ccc; line-height: 1.6;">Project details go here...</p>
+            <div style="margin-top: 20px; padding: 10px; background: rgba(255,255,255,0.05);">
+                <span style="font-size: 10px; color: #888;">STATUS:</span> <span id="modal-status" style="color: #00ff41;">ACTIVE</span>
+            </div>
+        </div>
+    </div>
+
     <div id="ui-layer">
         
         <div id="login-panel" class="terminal-box">
-            <div class="status-bar">
-                <span style="font-size: 10px; color: #444;">SYS.SECURE</span>
-                <span style="font-size: 10px; color: #00ff41;" class="blink">● ONLINE</span>
-            </div>
             <h1>IDENTITY VERIFICATION</h1>
             <div class="subtitle">ENTER CREDENTIALS TO ACCESS C.O.R.E.</div>
-            
-            <div class="input-group">
-                <label>> AGENT EMAIL</label>
-                <input type="email" id="login-email" placeholder="user@core.net">
-            </div>
-            <div class="input-group">
-                <label>> SECURITY KEY</label>
-                <input type="password" id="login-pass" placeholder="••••••••">
-            </div>
-
+            <input type="email" id="login-email" placeholder="AGENT EMAIL">
+            <input type="password" id="login-pass" placeholder="SECURITY KEY">
             <button class="btn" onclick="handleLogin()">AUTHENTICATE</button>
-            <span class="toggle-link" onclick="toggleForm('register')">>> REQUEST NEW CLEARANCE (REGISTER)</span>
+            <p style="font-size: 11px; text-align: center; margin-top: 15px; cursor: pointer; text-decoration: underline;" onclick="toggleForm('register')">>> REGISTER NEW AGENT</p>
         </div>
 
         <div id="register-panel" class="terminal-box hidden">
-             <div class="status-bar">
-                <span style="font-size: 10px; color: #444;">SYS.NEW_USER</span>
-                <span style="font-size: 10px; color: orange;">● PENDING</span>
-            </div>
-            <h1>CLEARANCE REQUEST</h1>
-            <div class="subtitle">CREATE NEW AGENT PROFILE</div>
-            
-            <div class="input-group">
-                <label>> AGENT EMAIL</label>
-                <input type="email" id="reg-email">
-            </div>
-            <div class="input-group">
-                <label>> CREATE PASSWORD</label>
-                <input type="password" id="reg-pass">
-            </div>
-
+            <h1>NEW AGENT PROFILE</h1>
+            <input type="email" id="reg-email" placeholder="SET EMAIL">
+            <input type="password" id="reg-pass" placeholder="SET PASSWORD">
             <button class="btn" onclick="handleRegister()">SUBMIT REQUEST</button>
-            <span class="toggle-link" onclick="toggleForm('login')">>> RETURN TO LOGIN</span>
+            <p style="font-size: 11px; text-align: center; margin-top: 15px; cursor: pointer; text-decoration: underline;" onclick="toggleForm('login')">>> BACK TO LOGIN</p>
         </div>
 
         <div id="dashboard-panel" class="terminal-box hidden">
-            <div class="status-bar">
-                <span style="font-size: 10px; color: #444;">ID: <span id="user-display">UNKNOWN</span></span>
-                <span style="font-size: 10px; color: #00ff41;">LEVEL: FOUNDER</span>
+            <div style="border-bottom: 1px solid #333; margin-bottom: 20px; padding-bottom: 10px; display: flex; justify-content: space-between;">
+                <span style="font-size: 10px;">ID: <span id="user-display" style="color:#fff;">UNKNOWN</span></span>
+                <span style="font-size: 10px; color: #00ff41;">SECURE CONNECTION</span>
             </div>
-            <h1>MISSION CONTROL</h1>
-            <div class="subtitle">WELCOME BACK, COMMANDER</div>
             
-            <p>> SYSTEM STATUS: <span style="color:#00ff41">OPERATIONAL</span></p>
-            <p>> ACTIVE PROJECTS:</p>
-            <ul style="list-style: none; padding: 0; color: #888; font-size: 13px;">
-                <li style="margin-bottom: 8px;">[ACTIVE] HIVE_CLEAN_BOT.exe</li>
-                <li style="margin-bottom: 8px;">[ACTIVE] PILOT_PREP_SIM.web</li>
-                <li style="margin-bottom: 8px;">[PENDING] SAFE_SITE_IOT.c</li>
-            </ul>
+            <h1>MISSION CONTROL</h1>
+            <p style="font-size: 12px; color: #666;">SELECT A MODULE TO VIEW BLUEPRINTS:</p>
+            
+            <div class="project-item" onclick="openProject('hive')">
+                HIVE_CLEAN_BOT (Swarm Robotics)
+            </div>
+            <div class="project-item" onclick="openProject('flight')">
+                PILOT_PREP_SIM (Flight Dynamics)
+            </div>
+            <div class="project-item" onclick="openProject('iot')">
+                SAFE_SITE_IOT (Safety Systems)
+            </div>
 
-            <button class="btn" onclick="logout()">TERMINATE SESSION</button>
+            <button class="btn" style="background: transparent; border: 1px solid #ff3333; color: #ff3333; margin-top: 20px;" onclick="logout()">TERMINATE SESSION</button>
         </div>
 
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-        // ======================================================
-        // STOP! PASTE YOUR FIREBASE CONFIG INSIDE THESE BRACKETS
-        // ======================================================
+        // ============================================
+        // PASTE YOUR FIREBASE KEYS HERE (AGAIN)
+        // ============================================
         const firebaseConfig = {
             apiKey: "AIzaSyCix4eALWZyYsQU7lPuZMSRfnBNDW4AKK0",
   authDomain: "core-system-d53c1.firebaseapp.com",
@@ -151,90 +131,76 @@
   messagingSenderId: "854751335854",
   appId: "1:854751335854:web:791657757cfa112c1ae43f"
         };
-        // ======================================================
+        // ============================================
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
 
-        // --- AUTH FUNCTIONS ---
+        // --- AUTH LOGIC ---
         window.handleLogin = async () => {
-            const email = document.getElementById('login-email').value;
-            const pass = document.getElementById('login-pass').value;
-            try {
-                await signInWithEmailAndPassword(auth, email, pass);
-            } catch (error) { alert("ERROR: " + error.message); }
+            try { await signInWithEmailAndPassword(auth, document.getElementById('login-email').value, document.getElementById('login-pass').value); }
+            catch (e) { alert("ERROR: " + e.message); }
         }
-
         window.handleRegister = async () => {
-            const email = document.getElementById('reg-email').value;
-            const pass = document.getElementById('reg-pass').value;
-            try {
-                await createUserWithEmailAndPassword(auth, email, pass);
-                alert("ACCESS GRANTED. LOGGING IN...");
-            } catch (error) { alert("ERROR: " + error.message); }
+            try { await createUserWithEmailAndPassword(auth, document.getElementById('reg-email').value, document.getElementById('reg-pass').value); }
+            catch (e) { alert("ERROR: " + e.message); }
         }
-
         window.logout = () => signOut(auth);
-
-        window.toggleForm = (target) => {
-            document.getElementById('login-panel').classList.add('hidden');
-            document.getElementById('register-panel').classList.add('hidden');
-            document.getElementById(target + '-panel').classList.remove('hidden');
+        
+        window.toggleForm = (t) => {
+            ['login','register','dashboard'].forEach(p => document.getElementById(p+'-panel').classList.add('hidden'));
+            document.getElementById(t+'-panel').classList.remove('hidden');
         }
 
-        // --- STATE MONITOR ---
         onAuthStateChanged(auth, (user) => {
-            const loginPanel = document.getElementById('login-panel');
-            const registerPanel = document.getElementById('register-panel');
-            const dashPanel = document.getElementById('dashboard-panel');
-
-            if (user) {
-                // User is logged in -> Show Dashboard
-                loginPanel.classList.add('hidden');
-                registerPanel.classList.add('hidden');
-                dashPanel.classList.remove('hidden');
+            if(user) {
+                toggleForm('dashboard');
                 document.getElementById('user-display').innerText = user.email.toUpperCase();
             } else {
-                // User is logged out -> Show Login
-                dashPanel.classList.add('hidden');
-                loginPanel.classList.remove('hidden');
+                toggleForm('login');
             }
         });
 
-        // --- 3D ANIMATION ---
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('bg-canvas'), alpha: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
+        // --- PROJECT POPUP DATA ---
+        const projects = {
+            hive: {
+                title: "PROJECT: HIVE_CLEAN",
+                desc: "Autonomous Hexagonal Cleaning Robots designed for industrial swarm operations. \n\nTECH STACK:\n> Blender 3D Modeling (Chassis)\n> ESP32 Microcontrollers\n> Swarm Algorithm (C++)",
+                status: "MODELING PHASE"
+            },
+            flight: {
+                title: "PROJECT: PILOT_PREP",
+                desc: "Browser-based flight simulator for pilot exam training. Includes realistic physics engine and instrument panel.\n\nTECH STACK:\n> Three.js / WebGL\n> Flight Dynamics Physics Engine",
+                status: "LIVE ALPHA"
+            },
+            iot: {
+                title: "PROJECT: SAFE_SITE",
+                desc: "IoT-enabled construction helmet with biometric monitoring and hazard detection sensors.\n\nTECH STACK:\n> MQTT Protocol\n> Embedded C Sensors",
+                status: "CONCEPT"
+            }
+        };
 
-        const group = new THREE.Group();
-        const geo = new THREE.IcosahedronGeometry(10, 1);
-        const mat = new THREE.LineBasicMaterial({ color: 0x00ff41, transparent: true, opacity: 0.15 });
-        const mesh = new THREE.LineSegments(new THREE.WireframeGeometry(geo), mat);
-        group.add(mesh);
-        
-        const coreGeo = new THREE.DodecahedronGeometry(5);
-        const coreMat = new THREE.LineBasicMaterial({ color: 0x00ff41, transparent: true, opacity: 0.6 });
-        const coreMesh = new THREE.LineSegments(new THREE.WireframeGeometry(coreGeo), coreMat);
-        group.add(coreMesh);
-
-        scene.add(group);
-        camera.position.z = 30;
-
-        function animate() {
-            requestAnimationFrame(animate);
-            mesh.rotation.y += 0.002;
-            coreMesh.rotation.x -= 0.005;
-            coreMesh.rotation.y -= 0.005;
-            renderer.render(scene, camera);
+        window.openProject = (id) => {
+            const p = projects[id];
+            document.getElementById('modal-title').innerText = p.title;
+            document.getElementById('modal-desc').innerText = p.desc;
+            document.getElementById('modal-status').innerText = p.status;
+            document.getElementById('modal-overlay').classList.remove('hidden');
         }
+        window.closeModal = () => document.getElementById('modal-overlay').classList.add('hidden');
+
+        // --- 3D BACKGROUND ---
+        const scene = new THREE.Scene();
+        const cam = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+        const ren = new THREE.WebGLRenderer({canvas: document.getElementById('bg-canvas'), alpha:true});
+        ren.setSize(window.innerWidth, window.innerHeight);
+        const geo = new THREE.IcosahedronGeometry(10,1);
+        const mat = new THREE.LineBasicMaterial({color:0x00ff41, transparent:true, opacity:0.15});
+        const mesh = new THREE.LineSegments(new THREE.WireframeGeometry(geo), mat);
+        scene.add(mesh);
+        cam.position.z = 30;
+        function animate(){ requestAnimationFrame(animate); mesh.rotation.y+=0.002; ren.render(scene, cam); }
         animate();
-        
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
     </script>
 </body>
 </html>
